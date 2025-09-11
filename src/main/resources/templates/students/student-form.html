@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Thêm/Sửa Sinh viên</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+<h2 th:text="${student.id} != null ? 'Sửa Sinh viên' : 'Thêm Sinh viên'"></h2>
+
+<form th:action="@{/students}" th:object="${student}" method="post">
+    <input type="hidden" th:field="*{id}"/>
+
+    <div class="mb-3">
+        <label>Mã SV</label>
+        <input type="text" th:field="*{studentCode}" class="form-control"/>
+    </div>
+
+    <div class="mb-3">
+        <label>Họ tên</label>
+        <input type="text" th:field="*{fullName}" class="form-control"/>
+    </div>
+
+    <div class="mb-3">
+        <label>Email</label>
+        <input type="email" th:field="*{email}" class="form-control"/>
+    </div>
+
+    <div class="mb-3">
+        <label>Lớp</label>
+        <input type="text" th:field="*{classroom}" class="form-control"/>
+    </div>
+
+    <div class="mb-3">
+        <label>Ngày sinh</label>
+        <input type="date" th:field="*{birthday}" class="form-control"/>
+    </div>
+
+    <button class="btn btn-primary">Lưu</button>
+    <a th:href="@{/students}" class="btn btn-secondary">Hủy</a>
+</form>
+</body>
+</html>

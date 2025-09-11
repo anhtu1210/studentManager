@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Quản lý Sinh viên</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+<h2>Danh sách Sinh viên</h2>
+
+<form method="get" th:action="@{/students}" class="mb-3">
+    <input type="text" name="keyword" placeholder="Tìm kiếm..." class="form-control w-25 d-inline">
+    <button class="btn btn-primary">Tìm</button>
+    <a th:href="@{/students/new}" class="btn btn-success">Thêm mới</a>
+</form>
+
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Mã SV</th>
+        <th>Họ tên</th>
+        <th>Email</th>
+        <th>Lớp</th>
+        <th>Ngày sinh</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="student : ${students}">
+        <td th:text="${student.id}"></td>
+        <td th:text="${student.studentCode}"></td>
+        <td th:text="${student.fullName}"></td>
+        <td th:text="${student.email}"></td>
+        <td th:text="${student.classroom}"></td>
+        <td th:text="${student.birthday}"></td>
+        <td>
+            <a th:href="@{/students/edit/{id}(id=${student.id})}" class="btn btn-warning btn-sm">Sửa</a>
+            <a th:href="@{/students/delete/{id}(id=${student.id})}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>
