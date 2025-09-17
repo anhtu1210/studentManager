@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Đăng ký môn học</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+    <h2 th:if="${isEdit}">Sửa đăng ký</h2>
+    <h2 th:unless="${isEdit}">Thêm đăng ký mới</h2>
+
+    <form th:action="@{/enrollments/save}" th:object="${enrollment}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="mb-3">
+            <label>Sinh viên</label>
+            <select name="studentId" class="form-select">
+                <option th:if="${enrollment.student == null}" value="" selected>-- Chọn sinh viên --</option>
+                <option th:each="st : ${students}" th:value="${st.id}" th:text="${st.fullName}"
+                        th:selected="${enrollment.student != null and enrollment.student.id == st.id}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Môn học</label>
+            <select name="subjectId" class="form-select">
+                <option th:if="${enrollment.subject == null}" value="" selected>-- Chọn môn học --</option>
+                <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.subjectName}"
+                        th:selected="${enrollment.subject != null and enrollment.subject.id == sub.id}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Lớp học</label>
+            <select name="classroomId" class="form-select">
+                <option th:if="${enrollment.classroom == null}" value="" selected>-- Chọn lớp --</option>
+                <option th:each="cl : ${classrooms}" th:value="${cl.id}" th:text="${cl.className}"
+                        th:selected="${enrollment.classroom != null and enrollment.classroom.id == cl.id}"></option>
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <label>Điểm</label>
+            <input type="number" th:field="*{grade}" class="form-control" step="0.1" min="0" max="10"/>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <a th:href="@{/enrollments}" class="btn btn-secondary">Hủy</a>
+    </form>
+</body>
+</html>
