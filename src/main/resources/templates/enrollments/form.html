@@ -2,45 +2,222 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Form Đăng ký môn học</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${isEdit ? 'Sửa đăng ký môn học' : 'Thêm đăng ký môn học mới'} + ' - Hệ thống quản lý sinh viên'">Form Đăng ký môn học</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .form-body {
+            padding: 40px;
+        }
+        .form-floating-custom {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .form-floating-custom .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px 15px 10px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .form-floating-custom .form-select:focus {
+            border-color: #6f42c1;
+            box-shadow: 0 0 0 0.2rem rgba(111, 66, 193, 0.25);
+        }
+        .form-floating-custom label {
+            padding: 15px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .error-message i {
+            margin-right: 5px;
+        }
+        .nav-breadcrumb {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+        }
+        .nav-breadcrumb .breadcrumb {
+            margin: 0;
+            background: none;
+            padding: 0;
+        }
+        .nav-breadcrumb .breadcrumb-item a {
+            color: #6f42c1;
+            text-decoration: none;
+        }
+        .nav-breadcrumb .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        .selection-card {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .selection-card:hover {
+            border-color: #6f42c1;
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.1);
+        }
+    </style>
 </head>
-<body class="container mt-4">
-    <h2 th:if="${isEdit}">Sửa đăng ký</h2>
-    <h2 th:unless="${isEdit}">Thêm đăng ký mới</h2>
-
-    <form th:action="@{/enrollments/save}" th:object="${enrollment}" method="post">
-        <input type="hidden" th:field="*{id}"/>
-
-        <div class="mb-3">
-            <label>Sinh viên</label>
-            <select name="studentId" class="form-select">
-                <option th:if="${enrollment.student == null}" value="" selected>-- Chọn sinh viên --</option>
-                <option th:each="st : ${students}" th:value="${st.id}" th:text="${st.fullName}"
-                        th:selected="${enrollment.student != null and enrollment.student.id == st.id}"></option>
-            </select>
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <div class="nav-breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/dashboard}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/enrollments}">
+                            <i class="fas fa-user-graduate me-1"></i>Đăng ký môn học
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" th:text="${isEdit ? 'Chỉnh sửa' : 'Thêm mới'}">Form</li>
+                </ol>
+            </nav>
         </div>
 
-        <div class="mb-3">
-            <label>Môn học</label>
-            <select name="subjectId" class="form-select">
-                <option th:if="${enrollment.subject == null}" value="" selected>-- Chọn môn học --</option>
-                <option th:each="sub : ${subjects}" th:value="${sub.id}" th:text="${sub.subjectName}"
-                        th:selected="${enrollment.subject != null and enrollment.subject.id == sub.id}"></option>
-            </select>
-        </div>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <!-- Header -->
+                    <div class="form-header">
+                        <h2 class="mb-2">
+                            <i class="fas fa-user-graduate me-2"></i>
+                            <span th:text="${isEdit ? 'Sửa đăng ký môn học' : 'Thêm đăng ký môn học mới'}">Form Đăng ký</span>
+                        </h2>
+                        <p class="mb-0" th:text="${isEdit ? 'Cập nhật thông tin đăng ký' : 'Điền thông tin để thêm đăng ký mới'}">Quản lý đăng ký môn học của sinh viên</p>
+                    </div>
 
-        <div class="mb-3">
-            <label>Lớp học</label>
-            <select name="classroomId" class="form-select">
-                <option th:if="${enrollment.classroom == null}" value="" selected>-- Chọn lớp --</option>
-                <option th:each="cl : ${classrooms}" th:value="${cl.id}" th:text="${cl.className}"
-                        th:selected="${enrollment.classroom != null and enrollment.classroom.id == cl.id}"></option>
-            </select>
-        </div>
+                    <!-- Form Body -->
+                    <div class="form-body">
+                        <form th:action="@{/enrollments/save}" th:object="${enrollment}" method="post">
+                            <input type="hidden" th:field="*{id}"/>
 
-        <button class="btn btn-primary" type="submit">Lưu</button>
-        <a th:href="@{/enrollments}" class="btn btn-secondary">Hủy</a>
-    </form>
+                            <!-- Student Selection -->
+                            <div class="selection-card">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-user me-2 text-primary"></i>Chọn Sinh viên
+                                </h5>
+                                <div class="form-floating-custom">
+                                    <select name="studentId" 
+                                            class="form-select" 
+                                            id="studentId">
+                                        <option th:if="${enrollment.student == null}" value="" selected>-- Chọn sinh viên --</option>
+                                        <option th:each="st : ${students}" 
+                                                th:value="${st.id}" 
+                                                th:text="${st.fullName + ' (' + st.studentCode + ')'}"
+                                                th:selected="${enrollment.student != null and enrollment.student.id == st.id}"></option>
+                                    </select>
+                                    <label for="studentId">
+                                        <i class="fas fa-user me-1"></i>Sinh viên *
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Subject Selection -->
+                            <div class="selection-card">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-book me-2 text-warning"></i>Chọn Môn học
+                                </h5>
+                                <div class="form-floating-custom">
+                                    <select name="subjectId" 
+                                            class="form-select" 
+                                            id="subjectId">
+                                        <option th:if="${enrollment.subject == null}" value="" selected>-- Chọn môn học --</option>
+                                        <option th:each="sub : ${subjects}" 
+                                                th:value="${sub.id}" 
+                                                th:text="${sub.subjectName + ' (' + sub.subjectCode + ')'}"
+                                                th:selected="${enrollment.subject != null and enrollment.subject.id == sub.id}"></option>
+                                    </select>
+                                    <label for="subjectId">
+                                        <i class="fas fa-book me-1"></i>Môn học *
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Classroom Selection -->
+                            <div class="selection-card">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-school me-2 text-success"></i>Chọn Lớp học
+                                </h5>
+                                <div class="form-floating-custom">
+                                    <select name="classroomId" 
+                                            class="form-select" 
+                                            id="classroomId">
+                                        <option th:if="${enrollment.classroom == null}" value="" selected>-- Chọn lớp học --</option>
+                                        <option th:each="cl : ${classrooms}" 
+                                                th:value="${cl.id}" 
+                                                th:text="${cl.className + ' (' + cl.classCode + ')'}"
+                                                th:selected="${enrollment.classroom != null and enrollment.classroom.id == cl.id}"></option>
+                                    </select>
+                                    <label for="classroomId">
+                                        <i class="fas fa-school me-1"></i>Lớp học *
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4 pt-4" style="border-top: 1px solid #e9ecef;">
+                                <a th:href="@{/enrollments}" class="btn btn-outline-secondary btn-custom">
+                                    <i class="fas fa-arrow-left me-1"></i>Quay lại
+                                </a>
+                                <div>
+                                    <button type="submit" class="btn btn-purple btn-custom me-2" style="background: linear-gradient(135deg, #6f42c1 0%, #e83e8c 100%); border: none; color: white;">
+                                        <i class="fas fa-save me-1"></i>
+                                        <span th:text="${isEdit ? 'Cập nhật' : 'Thêm đăng ký'}">Lưu</span>
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-warning btn-custom">
+                                        <i class="fas fa-undo me-1"></i>Làm mới
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

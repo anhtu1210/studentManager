@@ -2,47 +2,297 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Form Điểm</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${grade.id != null ? 'Sửa điểm' : 'Thêm điểm mới'} + ' - Hệ thống quản lý sinh viên'">Form Điểm</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .form-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        .form-header {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        .form-body {
+            padding: 40px;
+        }
+        .form-floating-custom {
+            position: relative;
+            margin-bottom: 25px;
+        }
+        .form-floating-custom .form-control, .form-floating-custom .form-select {
+            border: 2px solid #e9ecef;
+            border-radius: 15px;
+            padding: 20px 15px 10px 15px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+        }
+        .form-floating-custom .form-control:focus, .form-floating-custom .form-select:focus {
+            border-color: #dc3545;
+            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+        }
+        .form-floating-custom label {
+            padding: 15px;
+            color: #6c757d;
+            font-weight: 500;
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 12px 30px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .error-message {
+            color: #dc3545;
+            font-size: 0.875rem;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+        }
+        .error-message i {
+            margin-right: 5px;
+        }
+        .nav-breadcrumb {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 15px 20px;
+            margin-bottom: 30px;
+        }
+        .nav-breadcrumb .breadcrumb {
+            margin: 0;
+            background: none;
+            padding: 0;
+        }
+        .nav-breadcrumb .breadcrumb-item a {
+            color: #dc3545;
+            text-decoration: none;
+        }
+        .nav-breadcrumb .breadcrumb-item.active {
+            color: #6c757d;
+        }
+        .score-input-group {
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 2px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+        .score-input-group:hover {
+            border-color: #dc3545;
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.1);
+        }
+        .score-preview {
+            background: linear-gradient(135deg, #dc3545 0%, #fd7e14 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .score-preview .score-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        .score-preview .score-label {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+    </style>
 </head>
-<body class="container mt-4">
+<body class="bg-light">
+    <div class="container py-4">
+        <!-- Breadcrumb -->
+        <div class="nav-breadcrumb">
+            <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/dashboard}">
+                            <i class="fas fa-home me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item">
+                        <a th:href="@{/grades}">
+                            <i class="fas fa-chart-line me-1"></i>Điểm số
+                        </a>
+                    </li>
+                    <li class="breadcrumb-item active" th:text="${grade.id != null ? 'Chỉnh sửa' : 'Thêm mới'}">Form</li>
+                </ol>
+            </nav>
+        </div>
 
-<h2 th:text="${grade.id != null} ? 'Sửa điểm' : 'Thêm điểm mới'"></h2>
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <div class="form-container">
+                    <!-- Header -->
+                    <div class="form-header">
+                        <h2 class="mb-2">
+                            <i class="fas fa-chart-line me-2"></i>
+                            <span th:text="${grade.id != null ? 'Sửa điểm' : 'Thêm điểm mới'}">Form Điểm</span>
+                        </h2>
+                        <p class="mb-0" th:text="${grade.id != null ? 'Cập nhật điểm số' : 'Nhập điểm số cho sinh viên'}">Quản lý điểm số sinh viên</p>
+                    </div>
 
-<form th:action="@{/grades/save}" th:object="${grade}" method="post">
-    <input type="hidden" th:field="*{id}"/>
+                    <!-- Form Body -->
+                    <div class="form-body">
+                        <form th:action="@{/grades/save}" th:object="${grade}" method="post">
+                            <input type="hidden" th:field="*{id}"/>
 
-    <!-- Chọn sinh viên-môn học (enrollment) -->
-    <div class="mb-3">
-        <label for="enrollment">Sinh viên - Môn học</label>
-        <select id="enrollment" name="enrollmentId" class="form-control" required>
-            <option th:if="${grade.enrollment == null}" value="" selected>-- Chọn --</option>
-            <option th:each="enroll : ${enrollments}"
-                    th:value="${enroll.id}"
-                    th:text="${enroll.student.fullName + ' - ' + enroll.subject.subjectName}"
-                    th:selected="${grade.enrollment != null and grade.enrollment.id == enroll.id}">
-            </option>
-        </select>
+                            <!-- Enrollment Selection -->
+                            <div class="score-input-group">
+                                <h5 class="mb-3">
+                                    <i class="fas fa-user-graduate me-2 text-primary"></i>Chọn Sinh viên - Môn học
+                                </h5>
+                                <div class="form-floating-custom">
+                                    <select id="enrollment" name="enrollmentId" 
+                                            class="form-select" 
+                                            required>
+                                        <option th:if="${grade.enrollment == null}" value="" selected>-- Chọn sinh viên và môn học --</option>
+                                        <option th:each="enroll : ${enrollments}"
+                                                th:value="${enroll.id}"
+                                                th:text="${enroll.student.fullName + ' (' + enroll.student.studentCode + ') - ' + enroll.subject.subjectName + ' (' + enroll.subject.subjectCode + ')'}"
+                                                th:selected="${grade.enrollment != null and grade.enrollment.id == enroll.id}">
+                                        </option>
+                                    </select>
+                                    <label for="enrollment">
+                                        <i class="fas fa-user-graduate me-1"></i>Sinh viên - Môn học *
+                                    </label>
+                                </div>
+                            </div>
+
+                            <!-- Score Inputs -->
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="score-input-group">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-chart-bar me-2 text-warning"></i>Điểm giữa kỳ
+                                        </h6>
+                                        <div class="form-floating-custom">
+                                            <input type="number" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   max="10" 
+                                                   th:field="*{midtermScore}" 
+                                                   class="form-control" 
+                                                   id="midtermScore"
+                                                   placeholder="0.00"
+                                                   required/>
+                                            <label for="midtermScore">
+                                                <i class="fas fa-chart-bar me-1"></i>Điểm giữa kỳ (0-10) *
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="score-input-group">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-chart-line me-2 text-info"></i>Điểm cuối kỳ
+                                        </h6>
+                                        <div class="form-floating-custom">
+                                            <input type="number" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   max="10" 
+                                                   th:field="*{finalScore}" 
+                                                   class="form-control" 
+                                                   id="finalScore"
+                                                   placeholder="0.00"
+                                                   required/>
+                                            <label for="finalScore">
+                                                <i class="fas fa-chart-line me-1"></i>Điểm cuối kỳ (0-10) *
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="score-input-group">
+                                        <h6 class="mb-3">
+                                            <i class="fas fa-trophy me-2 text-success"></i>Điểm tổng kết
+                                        </h6>
+                                        <div class="form-floating-custom">
+                                            <input type="number" 
+                                                   step="0.01" 
+                                                   min="0" 
+                                                   max="10" 
+                                                   th:field="*{totalScore}" 
+                                                   class="form-control" 
+                                                   id="totalScore"
+                                                   placeholder="0.00"
+                                                   readonly/>
+                                            <label for="totalScore">
+                                                <i class="fas fa-trophy me-1"></i>Điểm tổng kết (tự động)
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Score Preview -->
+                            <div class="score-preview" th:if="${grade.totalScore != null and grade.totalScore > 0}">
+                                <div class="score-value" th:text="${grade.totalScore}">8.5</div>
+                                <div class="score-label">
+                                    <span th:if="${grade.totalScore >= 8}">Xuất sắc</span>
+                                    <span th:if="${grade.totalScore >= 6.5 and grade.totalScore < 8}">Khá</span>
+                                    <span th:if="${grade.totalScore >= 5 and grade.totalScore < 6.5}">Trung bình</span>
+                                    <span th:if="${grade.totalScore < 5}">Yếu</span>
+                                </div>
+                            </div>
+
+                            <!-- Action Buttons -->
+                            <div class="d-flex justify-content-between align-items-center mt-4 pt-4" style="border-top: 1px solid #e9ecef;">
+                                <a th:href="@{/grades}" class="btn btn-outline-secondary btn-custom">
+                                    <i class="fas fa-arrow-left me-1"></i>Quay lại
+                                </a>
+                                <div>
+                                    <button type="submit" class="btn btn-danger btn-custom me-2">
+                                        <i class="fas fa-save me-1"></i>
+                                        <span th:text="${grade.id != null ? 'Cập nhật' : 'Thêm điểm'}">Lưu</span>
+                                    </button>
+                                    <button type="reset" class="btn btn-outline-warning btn-custom">
+                                        <i class="fas fa-undo me-1"></i>Làm mới
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
     </div>
 
-    <div class="mb-3">
-        <label for="midtermScore">Điểm giữa kỳ</label>
-        <input type="number" step="0.01" min="0" max="10" th:field="*{midtermScore}" class="form-control" required/>
-    </div>
-
-    <div class="mb-3">
-        <label for="finalScore">Điểm cuối kỳ</label>
-        <input type="number" step="0.01" min="0" max="10" th:field="*{finalScore}" class="form-control" required/>
-    </div>
-
-    <div class="mb-3">
-        <label for="totalScore">Điểm tổng kết (sẽ tính tự động nếu nhập cả giữa kỳ và cuối kỳ)</label>
-        <input type="number" step="0.01" min="0" max="10" th:field="*{totalScore}" class="form-control" readonly/>
-    </div>
-
-    <button class="btn btn-primary" type="submit">💾 Lưu</button>
-    <a th:href="@{/grades}" class="btn btn-secondary">❌ Hủy</a>
-</form>
-
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Auto-calculate total score -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const midtermInput = document.getElementById('midtermScore');
+            const finalInput = document.getElementById('finalScore');
+            const totalInput = document.getElementById('totalScore');
+            
+            function calculateTotal() {
+                const midterm = parseFloat(midtermInput.value) || 0;
+                const final = parseFloat(finalInput.value) || 0;
+                const total = (midterm * 0.3 + final * 0.7).toFixed(2);
+                totalInput.value = total;
+            }
+            
+            midtermInput.addEventListener('input', calculateTotal);
+            finalInput.addEventListener('input', calculateTotal);
+        });
+    </script>
 </body>
 </html>

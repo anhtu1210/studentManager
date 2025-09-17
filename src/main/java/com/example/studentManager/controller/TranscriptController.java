@@ -22,10 +22,59 @@ public class TranscriptController {
         this.studentService = studentService;
     }
 
-    // Xem toàn bộ bảng điểm
+    // Xem toàn bộ bảng điểm với filter
     @GetMapping
-    public String listAll(Model model) {
-        model.addAttribute("transcripts", transcriptService.getAll());
+    public String listAll(@RequestParam(required = false) String keyword,
+                         @RequestParam(required = false) String gradeFilter,
+                         @RequestParam(required = false) String scoreRange,
+                         Model model) {
+        List<Transcript> transcripts = transcriptService.getAll();
+        
+        // Apply filters
+        if (keyword != null && !keyword.trim().isEmpty()) {
+            transcripts = transcripts.stream()
+                    .filter(t -> t.getStudent().getFullName().toLowerCase().contains(keyword.toLowerCase()) ||
+                               t.getStudent().getStudentCode().toLowerCase().contains(keyword.toLowerCase()) ||
+                               t.getSubject().getSubjectName().toLowerCase().contains(keyword.toLowerCase()) ||
+                               t.getSubject().getSubjectCode().toLowerCase().contains(keyword.toLowerCase()))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        
+        if (gradeFilter != null && !gradeFilter.isEmpty()) {
+            transcripts = transcripts.stream()
+                    .filter(t -> t.getGradeLetter().equals(gradeFilter))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+        
+        if (scoreRange != null && !scoreRange.isEmpty()) {
+            switch (scoreRange) {
+                case "excellent":
+                    transcripts = transcripts.stream()
+                            .filter(t -> t.getFinalScore() >= 8.0)
+                            .collect(java.util.stream.Collectors.toList());
+                    break;
+                case "good":
+                    transcripts = transcripts.stream()
+                            .filter(t -> t.getFinalScore() >= 6.5 && t.getFinalScore() < 8.0)
+                            .collect(java.util.stream.Collectors.toList());
+                    break;
+                case "average":
+                    transcripts = transcripts.stream()
+                            .filter(t -> t.getFinalScore() >= 5.0 && t.getFinalScore() < 6.5)
+                            .collect(java.util.stream.Collectors.toList());
+                    break;
+                case "poor":
+                    transcripts = transcripts.stream()
+                            .filter(t -> t.getFinalScore() < 5.0)
+                            .collect(java.util.stream.Collectors.toList());
+                    break;
+            }
+        }
+        
+        model.addAttribute("transcripts", transcripts);
+        model.addAttribute("keyword", keyword);
+        model.addAttribute("gradeFilter", gradeFilter);
+        model.addAttribute("scoreRange", scoreRange);
         return "transcripts/list";
     }
 

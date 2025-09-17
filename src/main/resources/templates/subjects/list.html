@@ -2,38 +2,210 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Danh sách môn học</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách môn học - Hệ thống quản lý sinh viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-header-custom {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+            border: none;
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .table-modern {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .table-modern thead {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+        }
+        .table-modern tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .credit-badge {
+            background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+        }
+    </style>
 </head>
-<body class="container mt-4">
-    <h2>Danh sách môn học</h2>
-    <a th:href="@{/subjects/new}" class="btn btn-primary mb-3">Thêm môn học</a>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1 text-dark">
+                            <i class="fas fa-book me-2 text-warning"></i>
+                            Quản lý Môn học
+                        </h1>
+                        <p class="text-muted mb-0">Quản lý chương trình học và giảng viên phụ trách</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/dashboard}" class="btn btn-outline-primary btn-custom me-2">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                        <a th:href="@{/subjects/new}" class="btn btn-warning btn-custom">
+                            <i class="fas fa-plus me-1"></i>Thêm môn học
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-    <table class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Mã môn</th>
-                <th>Tên môn</th>
-                <th>Số tín chỉ</th>
-                <th>Giảng viên</th>
-                <th>Hành động</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr th:each="subject : ${subjects}">
-                <td th:text="${subject.id}"></td>
-                <td th:text="${subject.subjectCode}"></td>
-                <td th:text="${subject.subjectName}"></td>
-                <td th:text="${subject.credit}"></td>
-                <td th:text="${subject.teacher != null ? subject.teacher.fullName + ' (' + subject.teacher.teacherCode + ')' : ''}"></td>
-                <td>
-                    <a th:href="@{'/subjects/edit/' + ${subject.id}}" class="btn btn-warning btn-sm">Sửa</a>
-                    <a th:href="@{'/subjects/delete/' + ${subject.id}}" class="btn btn-danger btn-sm"
-                       onclick="return confirm('Bạn có chắc muốn xóa?');">Xóa</a>
-                </td>
-            </tr>
-        </tbody>
-    </table>
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="stats-card">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3 class="mb-1" th:text="${subjects.size()}">0</h3>
+                            <p class="mb-0">Tổng môn học</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1" th:text="${#lists.size(subjects)}">0</h3>
+                            <p class="mb-0">Đang mở</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1" th:text="${#aggregates.sum(subjects.![credit])}">0</h3>
+                            <p class="mb-0">Tổng tín chỉ</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1">5</h3>
+                            <p class="mb-0">Khoa</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subjects Table -->
+        <div class="card shadow-sm">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Danh sách môn học
+                    <span class="badge bg-light text-dark ms-2" th:text="${subjects.size()}">0</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${subjects.empty}" class="empty-state">
+                    <i class="fas fa-book"></i>
+                    <h4>Chưa có môn học nào</h4>
+                    <p>Hãy thêm môn học đầu tiên để bắt đầu quản lý</p>
+                    <a th:href="@{/subjects/new}" class="btn btn-warning btn-custom">
+                        <i class="fas fa-plus me-1"></i>Thêm môn học
+                    </a>
+                </div>
+                
+                <div th:unless="${subjects.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-modern table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="15%">Mã môn</th>
+                                    <th width="30%">Tên môn học</th>
+                                    <th width="10%">Tín chỉ</th>
+                                    <th width="25%">Giảng viên phụ trách</th>
+                                    <th width="15%" class="text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="subject, iterStat : ${subjects}">
+                                    <td th:text="${iterStat.count}">1</td>
+                                    <td>
+                                        <span class="badge bg-warning text-dark" th:text="${subject.subjectCode}">CS101</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-warning text-dark rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-book"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold" th:text="${subject.subjectName}">Lập trình Java</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="credit-badge" th:text="${subject.credit}">3</span>
+                                    </td>
+                                    <td>
+                                        <div th:if="${subject.teacher != null}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                     style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${subject.teacher.fullName}">Nguyễn Văn A</div>
+                                                    <small class="text-muted" th:text="${subject.teacher.teacherCode}">GV001</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:unless="${subject.teacher != null}" class="text-muted">
+                                            <i class="fas fa-user-slash me-1"></i>Chưa phân công
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{'/subjects/edit/' + ${subject.id}}" 
+                                               class="btn btn-warning btn-sm btn-custom" 
+                                               title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{'/subjects/delete/' + ${subject.id}}" 
+                                               class="btn btn-danger btn-sm btn-custom"
+                                               onclick="return confirm('Bạn có chắc muốn xóa môn học này?')" 
+                                               title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

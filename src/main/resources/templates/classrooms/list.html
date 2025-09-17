@@ -2,41 +2,218 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Danh sách lớp</title>
-    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Danh sách lớp học - Hệ thống quản lý sinh viên</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .card-header-custom {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border: none;
+        }
+        .btn-custom {
+            border-radius: 25px;
+            padding: 8px 20px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+        .btn-custom:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        .table-modern {
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        .table-modern thead {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+        .table-modern tbody tr:hover {
+            background-color: #f8f9fa;
+            transform: scale(1.01);
+            transition: all 0.2s ease;
+        }
+        .stats-card {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #6c757d;
+        }
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+        .classroom-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+        }
+        .classroom-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+    </style>
 </head>
-<body class="container mt-4">
-<div class="mb-3">
-    <a th:href="@{/dashboard}" class="btn btn-link">Dashboard</a>
-    <a th:href="@{/students}" class="btn btn-link">Sinh viên</a>
-    <a th:href="@{/classrooms}" class="btn btn-link">Lớp</a>
- </div>
-<h2>Danh sách Lớp</h2>
-<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
-<a th:href="@{/classrooms/new}" class="btn btn-success mb-3">Thêm lớp</a>
-<table class="table table-bordered">
-    <thead>
-    <tr>
-        <th>ID</th>
-        <th>Mã lớp</th>
-        <th>Tên lớp</th>
-        <th>Giảng viên</th>
-        <th>Hành động</th>
-    </tr>
-    </thead>
-    <tbody>
-    <tr th:each="c : ${classrooms}">
-        <td th:text="${c.id}"></td>
-        <td th:text="${c.classCode}"></td>
-        <td th:text="${c.className}"></td>
-        <td th:text="${c.teacher != null ? c.teacher.fullName + ' (' + c.teacher.teacherCode + ')' : ''}"></td>
-        <td>
-            <a th:href="@{/classrooms/edit/{id}(id=${c.id})}" class="btn btn-warning btn-sm">Sửa</a>
-            <a th:href="@{/classrooms/delete/{id}(id=${c.id})}" class="btn btn-danger btn-sm"
-               onclick="return confirm('Xóa lớp?')">Xóa</a>
-        </td>
-    </tr>
-    </tbody>
-</table>
+<body class="bg-light">
+    <div class="container-fluid py-4">
+        <!-- Header -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h1 class="h3 mb-1 text-dark">
+                            <i class="fas fa-school me-2 text-success"></i>
+                            Quản lý Lớp học
+                        </h1>
+                        <p class="text-muted mb-0">Quản lý thông tin lớp học và giảng viên phụ trách</p>
+                    </div>
+                    <div>
+                        <a th:href="@{/dashboard}" class="btn btn-outline-primary btn-custom me-2">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                        <a th:href="@{/classrooms/new}" class="btn btn-success btn-custom">
+                            <i class="fas fa-plus me-1"></i>Thêm lớp học
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Error Alert -->
+        <div th:if="${error}" class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle me-2"></i>
+            <span th:text="${error}">Lỗi</span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Statistics -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="stats-card">
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <h3 class="mb-1" th:text="${classrooms.size()}">0</h3>
+                            <p class="mb-0">Tổng lớp học</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1" th:text="${#lists.size(classrooms)}">0</h3>
+                            <p class="mb-0">Đang hoạt động</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1">5</h3>
+                            <p class="mb-0">Khoa</p>
+                        </div>
+                        <div class="col-md-3">
+                            <h3 class="mb-1">100%</h3>
+                            <p class="mb-0">Tỷ lệ hoàn thành</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Classrooms List -->
+        <div class="card shadow-sm">
+            <div class="card-header card-header-custom">
+                <h5 class="mb-0">
+                    <i class="fas fa-list me-2"></i>Danh sách lớp học
+                    <span class="badge bg-light text-dark ms-2" th:text="${classrooms.size()}">0</span>
+                </h5>
+            </div>
+            <div class="card-body p-0">
+                <div th:if="${classrooms.empty}" class="empty-state">
+                    <i class="fas fa-school"></i>
+                    <h4>Chưa có lớp học nào</h4>
+                    <p>Hãy thêm lớp học đầu tiên để bắt đầu quản lý</p>
+                    <a th:href="@{/classrooms/new}" class="btn btn-success btn-custom">
+                        <i class="fas fa-plus me-1"></i>Thêm lớp học
+                    </a>
+                </div>
+                
+                <div th:unless="${classrooms.empty}">
+                    <div class="table-responsive">
+                        <table class="table table-modern table-hover mb-0">
+                            <thead>
+                                <tr>
+                                    <th width="5%">#</th>
+                                    <th width="15%">Mã lớp</th>
+                                    <th width="25%">Tên lớp</th>
+                                    <th width="30%">Giảng viên phụ trách</th>
+                                    <th width="25%" class="text-center">Hành động</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="classroom, iterStat : ${classrooms}">
+                                    <td th:text="${iterStat.count}">1</td>
+                                    <td>
+                                        <span class="badge bg-success" th:text="${classroom.classCode}">L01</span>
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center">
+                                            <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                 style="width: 40px; height: 40px;">
+                                                <i class="fas fa-school"></i>
+                                            </div>
+                                            <div>
+                                                <div class="fw-bold" th:text="${classroom.className}">Lớp 01</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <div th:if="${classroom.teacher != null}">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" 
+                                                     style="width: 30px; height: 30px; font-size: 0.8rem;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold" th:text="${classroom.teacher.fullName}">Nguyễn Văn A</div>
+                                                    <small class="text-muted" th:text="${classroom.teacher.teacherCode}">GV001</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div th:unless="${classroom.teacher != null}" class="text-muted">
+                                            <i class="fas fa-user-slash me-1"></i>Chưa phân công
+                                        </div>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group" role="group">
+                                            <a th:href="@{/classrooms/edit/{id}(id=${classroom.id})}" 
+                                               class="btn btn-warning btn-sm btn-custom" 
+                                               title="Chỉnh sửa">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a th:href="@{/classrooms/delete/{id}(id=${classroom.id})}" 
+                                               class="btn btn-danger btn-sm btn-custom"
+                                               onclick="return confirm('Bạn có chắc muốn xóa lớp học này?')" 
+                                               title="Xóa">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
