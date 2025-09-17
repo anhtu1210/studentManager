@@ -6,6 +6,7 @@
     <title th:text="${pageTitle}">Dashboard - Hệ thống quản lý sinh viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
         .stat-card {
             transition: transform 0.3s ease, box-shadow 0.3s ease;
@@ -122,6 +123,11 @@
         }
         .modal-open {
             overflow: hidden;
+        }
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin: 20px 0;
         }
     </style>
 </head>
@@ -314,6 +320,22 @@
             </div>
         </div>
 
+        <!-- Subject Performance Chart -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Thống kê điểm trung bình theo môn học</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="subjectChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Quick Actions -->
         <div class="row">
             <div class="col-12">
@@ -396,7 +418,170 @@
     <!-- Bootstrap JavaScript -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     
+    <!-- Load data via AJAX -->
     <script>
+        var topStudentsData = [];
+        
+        // Load data from server
+        fetch('/debug/dashboard')
+            .then(response => response.json())
+            .then(data => {
+                topStudentsData = data.subjectPerformance || [];
+                console.log('Subject performance data loaded:', topStudentsData);
+                // Re-initialize chart with loaded data
+                initializeSubjectChart();
+            })
+            .catch(error => {
+                console.error('Error loading data:', error);
+                topStudentsData = [];
+                initializeSubjectChart();
+            });
+    </script>
+    
+    <script>
+        // Chart will be initialized when data is loaded via AJAX
+        
+        // Function to initialize subject performance chart
+        function initializeSubjectChart() {
+            const ctx = document.getElementById('subjectChart');
+            if (!ctx) {
+                console.error('Subject chart canvas not found');
+                return;
+            }
+            
+            // Get data from global variable
+            const subjectData = window.topStudentsData || [];
+            console.log('Subject performance data:', subjectData);
+            
+            // Debug: Check if data is available
+            if (typeof subjectData === 'undefined' || subjectData === null || !Array.isArray(subjectData)) {
+                console.error('subjectPerformance data is not available or not an array');
+                ctx.parentElement.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h5 class="text-warning">Lỗi tải dữ liệu</h5>
+                        <p class="text-muted">Không thể tải dữ liệu biểu đồ từ server</p>
+                        <small class="text-muted">Debug: subjectData = " + typeof subjectData + "</small>
+                    </div>
+                `;
+                return;
+            }
+            
+            if (subjectData.length === 0) {
+                ctx.parentElement.innerHTML = `
+                    <div class="text-center py-5">
+                        <i class="fas fa-chart-bar fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">Chưa có dữ liệu</h5>
+                        <p class="text-muted">Chưa có môn học nào có điểm để hiển thị biểu đồ</p>
+                    </div>
+                `;
+                return;
+            }
+            
+            // Prepare chart data
+            const labels = subjectData.map(subject => subject.subjectCode);
+            const data = subjectData.map(subject => subject.averageGrade);
+            const subjectNames = subjectData.map(subject => subject.subjectName);
+            const studentCounts = subjectData.map(subject => subject.studentCount);
+            
+            // Create gradient
+            const gradient = ctx.getContext('2d').createLinearGradient(0, 0, 0, 400);
+            gradient.addColorStop(0, 'rgba(40, 167, 69, 0.8)');
+            gradient.addColorStop(1, 'rgba(25, 135, 84, 0.8)');
+            
+            // Create chart
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Điểm trung bình',
+                        data: data,
+                        backgroundColor: gradient,
+                        borderColor: 'rgba(40, 167, 69, 1)',
+                        borderWidth: 2,
+                        borderRadius: 8,
+                        borderSkipped: false,
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: true,
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20,
+                                font: {
+                                    size: 14,
+                                    weight: 'bold'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            callbacks: {
+                                title: function(context) {
+                                    const index = context[0].dataIndex;
+                                    return `Mã môn: ${labels[index]}`;
+                                },
+                                label: function(context) {
+                                    const index = context.dataIndex;
+                                    return [
+                                        `Tên môn: ${subjectNames[index]}`,
+                                        `Điểm TB: ${context.parsed.y}`,
+                                        `Số SV: ${studentCounts[index]}`
+                                    ];
+                                }
+                            },
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            borderColor: 'rgba(40, 167, 69, 1)',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 10,
+                            ticks: {
+                                stepSize: 1,
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0, 0, 0, 0.1)',
+                                drawBorder: false
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                font: {
+                                    size: 12
+                                }
+                            },
+                            grid: {
+                                display: false
+                            }
+                        }
+                    },
+                    animation: {
+                        duration: 2000,
+                        easing: 'easeInOutQuart'
+                    },
+                    interaction: {
+                        intersect: false,
+                        mode: 'index'
+                    }
+                }
+            });
+        }
+        
         // Function to show students by category
         function showStudentsByCategory(category) {
             const categoryNames = {

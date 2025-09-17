@@ -136,6 +136,33 @@ public class DashboardService {
             stats.put("noGradesCount", 0);
         }
         
+        // Subject performance statistics - average grade by subject
+        List<Subject> allSubjects = subjectService.getAll();
+        List<Map<String, Object>> subjectPerformance = allSubjects.stream()
+            .map(subject -> {
+                List<Transcript> subjectTranscripts = transcriptService.getAll().stream()
+                    .filter(t -> t.getSubject().getId().equals(subject.getId()))
+                    .filter(t -> t.getFinalScore() != null)
+                    .toList();
+                
+                double avgScore = subjectTranscripts.stream()
+                    .mapToDouble(Transcript::getFinalScore)
+                    .average()
+                    .orElse(0.0);
+                
+                Map<String, Object> subjectData = new HashMap<>();
+                subjectData.put("subjectName", subject.getSubjectName());
+                subjectData.put("subjectCode", subject.getSubjectCode());
+                subjectData.put("averageGrade", Math.round(avgScore * 100.0) / 100.0);
+                subjectData.put("studentCount", subjectTranscripts.size());
+                return subjectData;
+            })
+            .filter(data -> (Double) data.get("averageGrade") > 0)
+            .sorted((a, b) -> Double.compare((Double) b.get("averageGrade"), (Double) a.get("averageGrade")))
+            .toList();
+        
+        stats.put("subjectPerformance", subjectPerformance);
+        
         return stats;
     }
     
