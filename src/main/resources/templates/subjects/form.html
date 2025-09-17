@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Môn học</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+    <h2 th:if="${isEdit}">Sửa môn học</h2>
+    <h2 th:unless="${isEdit}">Thêm môn học mới</h2>
+
+    <form th:action="@{/subjects/save}" th:object="${subject}" method="post">
+        <input type="hidden" th:field="*{id}"/>
+
+        <div class="mb-3">
+            <label>Mã môn</label>
+            <input type="text" th:field="*{subjectCode}" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+            <label>Tên môn</label>
+            <input type="text" th:field="*{subjectName}" class="form-control" required/>
+        </div>
+        <div class="mb-3">
+            <label>Số tín chỉ</label>
+            <input type="number" th:field="*{credit}" class="form-control" min="1"/>
+        </div>
+        <div class="mb-3">
+            <label>Giảng viên</label>
+            <select name="teacherId" class="form-control">
+                <option th:if="${subject.teacher == null}" value="" selected>-- Chọn giảng viên --</option>
+                <option th:each="t : ${teachers}"
+                        th:value="${t.id}"
+                        th:text="${t.fullName + ' (' + t.teacherCode + ')'}"
+                        th:selected="${subject.teacher != null and subject.teacher.id == t.id}"></option>
+            </select>
+        </div>
+
+        <button class="btn btn-primary" type="submit">Lưu</button>
+        <a th:href="@{/subjects}" class="btn btn-secondary">Hủy</a>
+    </form>
+</body>
+</html>
