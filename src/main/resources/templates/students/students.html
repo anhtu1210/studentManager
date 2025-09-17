@@ -42,6 +42,7 @@
             <a th:href="@{/students/edit/{id}(id=${student.id})}" class="btn btn-warning btn-sm">Sửa</a>
             <a th:href="@{/students/delete/{id}(id=${student.id})}" class="btn btn-danger btn-sm"
                onclick="return confirm('Bạn có chắc muốn xóa?')">Xóa</a>
+            <a th:href="@{/transcripts/student/{id}(id=${student.id})}" class="btn btn-info btn-sm">Bảng điểm</a>
         </td>
     </tr>
     </tbody>

@@ -31,10 +31,6 @@ public class Enrollment {
     @JoinColumn(name = "classroom_id", nullable = false)
     private Classroom classroom;
 
-    // Điểm số (có thể để null nếu chưa nhập)
-    @Column(name = "grade")
-    private Double grade;
-
     public Long getId() {
         return id;
     }
@@ -65,13 +61,5 @@ public class Enrollment {
 
     public void setClassroom(Classroom classroom) {
         this.classroom = classroom;
-    }
-
-    public Double getGrade() {
-        return grade;
-    }
-
-    public void setGrade(Double grade) {
-        this.grade = grade;
     }
 }

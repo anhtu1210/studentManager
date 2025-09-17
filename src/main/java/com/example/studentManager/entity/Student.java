@@ -41,6 +41,10 @@ public class Student {
         this.classroom = classroom;
     }
 
+    public Classroom getClassroom() {
+        return classroom;
+    }
+
     public Long getId() {
         return id;
     }

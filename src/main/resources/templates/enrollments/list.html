@@ -33,7 +33,6 @@
                 <th>Sinh viên</th>
                 <th>Môn học</th>
                 <th>Lớp học</th>
-                <th>Điểm</th>
                 <th>Hành động</th>
             </tr>
         </thead>
@@ -43,7 +42,6 @@
                 <td th:text="${enr.student.fullName}"></td>
                 <td th:text="${enr.subject.subjectName}"></td>
                 <td th:text="${enr.classroom.className}"></td>
-                <td th:text="${enr.grade}"></td>
                 <td>
                     <a th:href="@{'/enrollments/edit/' + ${enr.id}}" class="btn btn-warning btn-sm">Sửa</a>
                     <a th:href="@{'/enrollments/delete/' + ${enr.id}}" class="btn btn-danger btn-sm"

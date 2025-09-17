@@ -61,4 +61,12 @@ public class Grade {
     public void setTotalScore(Double totalScore) {
         this.totalScore = totalScore;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

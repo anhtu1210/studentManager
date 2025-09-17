@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Bảng điểm Sinh viên</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+<h2 th:text="'Bảng điểm của ' + ${student.fullName}"></h2>
+
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <th>Môn học</th>
+        <th>Điểm</th>
+        <th>Xếp loại</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="t : ${transcripts}">
+        <td th:text="${t.subject.subjectName}"></td>
+        <td th:text="${t.finalScore}"></td>
+        <td th:text="${t.gradeLetter}"></td>
+    </tr>
+    </tbody>
+</table>
+
+<p><strong>GPA Trung bình:</strong> <span th:text="${gpa}"></span></p>
+
+<a th:href="@{/transcripts}" class="btn btn-secondary">Quay lại</a>
+</body>
+</html>
