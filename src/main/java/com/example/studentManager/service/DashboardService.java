@@ -58,6 +58,7 @@ public class DashboardService {
                 .filter(avg -> avg > 0)
                 .average()
                 .orElse(0.0);
+
             stats.put("averageGrade", Math.round(totalAverage * 100.0) / 100.0);
             
             // Count students by academic performance
@@ -135,38 +136,11 @@ public class DashboardService {
             stats.put("noGradesCount", 0);
         }
         
-        // Recent activity (last 5 students)
-        List<Student> recentStudents = studentService.getAllStudents().stream()
-            .limit(5)
-            .toList();
-        stats.put("recentStudents", recentStudents);
-        
-        // Top performing students
-        List<Student> topStudents = studentService.getAllStudents().stream()
-            .filter(s -> transcriptService.getByStudent(s).stream()
-                .anyMatch(t -> t.getFinalScore() != null))
-            .sorted((s1, s2) -> {
-                double avg1 = transcriptService.getByStudent(s1).stream()
-                    .filter(t -> t.getFinalScore() != null)
-                    .mapToDouble(Transcript::getFinalScore)
-                    .average().orElse(0.0);
-                double avg2 = transcriptService.getByStudent(s2).stream()
-                    .filter(t -> t.getFinalScore() != null)
-                    .mapToDouble(Transcript::getFinalScore)
-                    .average().orElse(0.0);
-                return Double.compare(avg2, avg1);
-            })
-            .limit(5)
-            .toList();
-        stats.put("topStudents", topStudents);
-        
         return stats;
     }
     
-    public List<Student> getStudentsByPerformance(String category) {
-        List<Student> allStudents = studentService.getAllStudents();
-        
-        return allStudents.stream()
+    public List<Student> getStudentsByPerformanceCategory(String category) {
+        return studentService.getAllStudents().stream()
             .filter(student -> {
                 List<Transcript> transcripts = transcriptService.getByStudent(student);
                 

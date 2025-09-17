@@ -23,32 +23,54 @@ public class TranscriptServiceImpl implements TranscriptService {
 
     @Override
     public List<Transcript> getAll() {
+        // Get existing transcripts from database first
+        List<Transcript> existingTranscripts = transcriptRepository.findAll();
+        
         // Generate transcripts from all grades
         List<Grade> allGrades = gradeRepository.findAll();
         List<Transcript> transcripts = new ArrayList<>();
         
         for (Grade grade : allGrades) {
-            Transcript transcript = new Transcript();
-            transcript.setStudent(grade.getEnrollment().getStudent());
-            transcript.setSubject(grade.getEnrollment().getSubject());
-            transcript.setFinalScore(grade.getTotalScore());
+            // Check if transcript already exists for this student-subject combination
+            boolean exists = existingTranscripts.stream()
+                .anyMatch(t -> t.getStudent().getId().equals(grade.getEnrollment().getStudent().getId()) &&
+                              t.getSubject().getId().equals(grade.getEnrollment().getSubject().getId()));
             
-            // Convert score to letter grade
-            if (grade.getTotalScore() != null) {
-                if (grade.getTotalScore() >= 8.5) {
-                    transcript.setGradeLetter("A");
-                } else if (grade.getTotalScore() >= 7.0) {
-                    transcript.setGradeLetter("B");
-                } else if (grade.getTotalScore() >= 5.5) {
-                    transcript.setGradeLetter("C");
-                } else if (grade.getTotalScore() >= 4.0) {
-                    transcript.setGradeLetter("D");
-                } else {
-                    transcript.setGradeLetter("F");
+            if (!exists) {
+                Transcript transcript = new Transcript();
+                transcript.setStudent(grade.getEnrollment().getStudent());
+                transcript.setSubject(grade.getEnrollment().getSubject());
+                transcript.setFinalScore(grade.getTotalScore());
+                
+                // Convert score to letter grade
+                if (grade.getTotalScore() != null) {
+                    if (grade.getTotalScore() >= 8.5) {
+                        transcript.setGradeLetter("A");
+                    } else if (grade.getTotalScore() >= 7.0) {
+                        transcript.setGradeLetter("B");
+                    } else if (grade.getTotalScore() >= 5.5) {
+                        transcript.setGradeLetter("C");
+                    } else if (grade.getTotalScore() >= 4.0) {
+                        transcript.setGradeLetter("D");
+                    } else {
+                        transcript.setGradeLetter("F");
+                    }
+                }
+                
+                // Save to database
+                transcript = transcriptRepository.save(transcript);
+                transcripts.add(transcript);
+            } else {
+                // Use existing transcript
+                Transcript existing = existingTranscripts.stream()
+                    .filter(t -> t.getStudent().getId().equals(grade.getEnrollment().getStudent().getId()) &&
+                                t.getSubject().getId().equals(grade.getEnrollment().getSubject().getId()))
+                    .findFirst()
+                    .orElse(null);
+                if (existing != null) {
+                    transcripts.add(existing);
                 }
             }
-            
-            transcripts.add(transcript);
         }
         
         return transcripts;
