@@ -40,4 +40,12 @@ public class Student {
     public void setClassroom(Classroom classroom) {
         this.classroom = classroom;
     }
+
+    public Long getId() {
+        return id;
+    }
+
+    public void setId(Long id) {
+        this.id = id;
+    }
 }

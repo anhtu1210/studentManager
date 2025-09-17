@@ -1,7 +1,9 @@
 package com.example.studentManager.controller;
 
 import com.example.studentManager.entity.Classroom;
+import com.example.studentManager.entity.Teacher;
 import com.example.studentManager.service.ClassroomService;
+import com.example.studentManager.service.TeacherService;
 import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -13,9 +15,11 @@ import org.springframework.web.bind.annotation.*;
 public class ClassroomController {
 
     private final ClassroomService classroomService;
+    private final TeacherService teacherService;
 
-    public ClassroomController(ClassroomService classroomService) {
+    public ClassroomController(ClassroomService classroomService, TeacherService teacherService) {
         this.classroomService = classroomService;
+        this.teacherService = teacherService;
     }
 
     @ModelAttribute
@@ -37,6 +41,7 @@ public class ClassroomController {
     @GetMapping("/new")
     public String createClassroomForm(Model model) {
         model.addAttribute("classroom", new Classroom());
+        model.addAttribute("teachers", teacherService.getAll());
         model.addAttribute("isEdit", false);
         return "classrooms/form";
     }
@@ -44,10 +49,18 @@ public class ClassroomController {
     @PostMapping("/save")
     public String save(@Valid @ModelAttribute("classroom") Classroom classroom,
                        BindingResult bindingResult,
-                       Model model) {
+                       Model model,
+                       @RequestParam(value = "teacherId", required = false) Long teacherId) {
         if (bindingResult.hasErrors()) {
+            model.addAttribute("teachers", teacherService.getAll());
             model.addAttribute("isEdit", classroom.getId() != null);
             return "classrooms/form";
+        }
+        if (teacherId != null) {
+            Teacher teacher = teacherService.getById(teacherId);
+            classroom.setTeacher(teacher);
+        } else {
+            classroom.setTeacher(null);
         }
         classroomService.save(classroom);
         return "redirect:/classrooms";
@@ -60,6 +73,7 @@ public class ClassroomController {
             return "redirect:/classrooms?error=Classroom%20not%20found";
         }
         model.addAttribute("classroom", classroom);
+        model.addAttribute("teachers", teacherService.getAll());
         model.addAttribute("isEdit", true);
         return "classrooms/form";
     }

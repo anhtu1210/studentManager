@@ -6,6 +6,10 @@
     <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
 </head>
 <body class="container mt-4">
+    <div class="mb-3">
+        <a th:href="@{/dashboard}" class="btn btn-link">Dashboard</a>
+        <a th:href="@{/classrooms}" class="btn btn-link">Danh sách lớp</a>
+    </div>
     <h2 th:if="${isEdit}">Sửa lớp</h2>
     <h2 th:unless="${isEdit}">Thêm lớp mới</h2>
 
@@ -22,7 +26,13 @@
     </div>
     <div class="mb-3">
         <label>Giảng viên</label>
-        <input type="text" th:field="*{teacherName}" class="form-control" />
+        <select name="teacherId" class="form-control">
+            <option th:if="${classroom.teacher == null}" value="" selected>-- Chọn giảng viên --</option>
+            <option th:each="t : ${teachers}"
+                    th:value="${t.id}"
+                    th:text="${t.fullName + ' (' + t.teacherCode + ')'}"
+                    th:selected="${classroom.teacher != null and classroom.teacher.id == t.id}"></option>
+        </select>
     </div>
     <button class="btn btn-primary" type="submit">Lưu</button>
     <a th:href="@{/classrooms}" class="btn btn-secondary">Hủy</a>

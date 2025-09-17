@@ -24,8 +24,9 @@ public class Classroom {
     @Column(name = "class_name")
     private String className;
 
-    @Column(name = "teacher_name")
-    private String teacherName;
+    @ManyToOne
+    @JoinColumn(name = "teacher_id")
+    private Teacher teacher;
 
     public Long getId() {
         return id;
@@ -33,5 +34,29 @@ public class Classroom {
 
     public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getClassCode() {
+        return classCode;
+    }
+
+    public void setClassCode(String classCode) {
+        this.classCode = classCode;
+    }
+
+    public String getClassName() {
+        return className;
+    }
+
+    public void setClassName(String className) {
+        this.className = className;
+    }
+
+    public Teacher getTeacher() {
+        return teacher;
+    }
+
+    public void setTeacher(Teacher teacher) {
+        this.teacher = teacher;
     }
 }
