@@ -36,4 +36,28 @@ public class Transcript {
     public void setFinalScore(Double finalScore) {
         this.finalScore = finalScore;
     }
+
+    public Student getStudent() {
+        return student;
+    }
+
+    public void setStudent(Student student) {
+        this.student = student;
+    }
+
+    public Subject getSubject() {
+        return subject;
+    }
+
+    public void setSubject(Subject subject) {
+        this.subject = subject;
+    }
+
+    public String getGradeLetter() {
+        return gradeLetter;
+    }
+
+    public void setGradeLetter(String gradeLetter) {
+        this.gradeLetter = gradeLetter;
+    }
 }

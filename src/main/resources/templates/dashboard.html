@@ -1,110 +1,677 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html xmlns:th="http://www.thymeleaf.org" lang="vi">
 <head>
     <meta charset="UTF-8">
-    <title th:text="${pageTitle}">Dashboard</title>
-    <link rel="stylesheet" th:href="@{/css/style.css}">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${pageTitle}">Dashboard - Hệ thống quản lý sinh viên</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .stat-card {
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            border: none;
+            border-radius: 15px;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+        .stat-icon {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+        }
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 0.5rem;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin: 20px 0;
+        }
+        .gradient-bg {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .navbar-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+        .card-header-custom {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 15px 15px 0 0 !important;
+        }
+        .clickable-card {
+            transition: all 0.3s ease;
+        }
+        .clickable-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+            border: 2px solid #667eea;
+        }
+        .clickable-card:active {
+            transform: translateY(-4px);
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1050;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            outline: 0;
+        }
+        .modal.show {
+            display: block;
+        }
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 1040;
+            width: 100vw;
+            height: 100vh;
+            background-color: #000;
+            opacity: 0.5;
+        }
+        .modal-dialog {
+            position: relative;
+            width: auto;
+            margin: 0.5rem;
+            pointer-events: none;
+        }
+        .modal-content {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            pointer-events: auto;
+            background-color: #fff;
+            background-clip: padding-box;
+            border: 1px solid rgba(0,0,0,.2);
+            border-radius: 0.3rem;
+            outline: 0;
+        }
+        .modal-header {
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            padding: 1rem 1rem;
+            border-bottom: 1px solid #dee2e6;
+            border-top-left-radius: calc(0.3rem - 1px);
+            border-top-right-radius: calc(0.3rem - 1px);
+        }
+        .modal-body {
+            position: relative;
+            flex: 1 1 auto;
+            padding: 1rem;
+        }
+        .btn-close {
+            box-sizing: content-box;
+            width: 1em;
+            height: 1em;
+            padding: 0.25em 0.25em;
+            margin: -0.25em -0.25em -0.25em auto;
+            color: #000;
+            background: transparent url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='%23000'%3e%3cpath d='m.5.5 15 15m0-15-15 15'/%3e%3c/svg%3e") center/1em auto no-repeat;
+            border: 0;
+            border-radius: 0.25rem;
+            opacity: 0.5;
+        }
+        .btn-close:hover {
+            color: #000;
+            text-decoration: none;
+            opacity: 0.75;
+        }
+    </style>
 </head>
-<body>
-<div class="container mt-5">
-    <h1 class="text-center">Welcome to Dashboard</h1>
-    <p class="text-center">Bạn đã đăng nhập thành công!</p>
+<body class="bg-light">
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg navbar-dark navbar-custom shadow">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="/dashboard">
+                <i class="fas fa-graduation-cap me-2"></i>
+                Hệ thống quản lý sinh viên
+            </a>
+            <div class="navbar-nav ms-auto">
+                <a class="nav-link" href="/profile">
+                    <i class="fas fa-user me-1"></i>Profile
+                </a>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
+                    <button type="submit" class="btn btn-outline-light btn-sm">
+                        <i class="fas fa-sign-out-alt me-1"></i>Đăng xuất
+                    </button>
+                </form>
+            </div>
+        </div>
+    </nav>
 
-    <div class="row mt-4">
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý sinh viên</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa sinh viên</p>
-                    <a href="/students" class="btn btn-primary">Đi đến</a>
+    <div class="container-fluid py-4">
+        <!-- Welcome Section -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="card gradient-bg shadow">
+                    <div class="card-body text-center py-5">
+                        <h1 class="display-4 fw-bold mb-3">
+                            <i class="fas fa-tachometer-alt me-3"></i>Dashboard
+                        </h1>
+                        <p class="lead mb-0">Chào mừng bạn đến với hệ thống quản lý sinh viên</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Tài khoản</h5>
-                    <p class="card-text">Xem thông tin tài khoản</p>
-                    <a href="/profile" class="btn btn-success">Xem profile</a>
+        <!-- Statistics Cards -->
+        <div class="row mb-4">
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-users"></i>
+                        </div>
+                        <div class="stat-number text-primary" th:text="${totalStudents}">0</div>
+                        <h6 class="text-muted mb-0">Tổng số sinh viên</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-chalkboard-teacher"></i>
+                        </div>
+                        <div class="stat-number text-success" th:text="${totalTeachers}">0</div>
+                        <h6 class="text-muted mb-0">Tổng số giảng viên</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-school"></i>
+                        </div>
+                        <div class="stat-number text-warning" th:text="${totalClassrooms}">0</div>
+                        <h6 class="text-muted mb-0">Tổng số lớp học</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-3 col-md-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-info">
+                            <i class="fas fa-book"></i>
+                        </div>
+                        <div class="stat-number text-info" th:text="${totalSubjects}">0</div>
+                        <h6 class="text-muted mb-0">Tổng số môn học</h6>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý lớp học</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa lớp học</p>
-                    <a href="/classrooms" class="btn btn-warning">Đi đến</a>
+        <!-- Student Academic Performance Statistics -->
+        <div class="row mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-chart-line"></i>
+                        </div>
+                        <div class="stat-number text-success" th:text="${averageGrade}">0.0</div>
+                        <h6 class="text-muted mb-0">Điểm TB chung</h6>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm clickable-card" onclick="showStudentsByCategory('excellent')" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-success">
+                            <i class="fas fa-star"></i>
+                        </div>
+                        <div class="stat-number text-success" th:text="${excellentCount}">0</div>
+                        <h6 class="text-muted mb-0">Xuất sắc</h6>
+                        <small class="text-muted">(≥8.5)</small>
+                        <div class="mt-2">
+                            <small class="text-success">
+                                <i class="fas fa-mouse-pointer me-1"></i>Click để xem danh sách
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm clickable-card" onclick="showStudentsByCategory('good')" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-primary">
+                            <i class="fas fa-thumbs-up"></i>
+                        </div>
+                        <div class="stat-number text-primary" th:text="${goodCount}">0</div>
+                        <h6 class="text-muted mb-0">Khá</h6>
+                        <small class="text-muted">(7.0-8.4)</small>
+                        <div class="mt-2">
+                            <small class="text-primary">
+                                <i class="fas fa-mouse-pointer me-1"></i>Click để xem danh sách
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm clickable-card" onclick="showStudentsByCategory('average')" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-warning">
+                            <i class="fas fa-minus-circle"></i>
+                        </div>
+                        <div class="stat-number text-warning" th:text="${averageCount}">0</div>
+                        <h6 class="text-muted mb-0">Trung bình</h6>
+                        <small class="text-muted">(5.5-6.9)</small>
+                        <div class="mt-2">
+                            <small class="text-warning">
+                                <i class="fas fa-mouse-pointer me-1"></i>Click để xem danh sách
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm clickable-card" onclick="showStudentsByCategory('poor')" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-danger">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        <div class="stat-number text-danger" th:text="${poorCount}">0</div>
+                        <h6 class="text-muted mb-0">Yếu</h6>
+                        <small class="text-muted">(<5.5)</small>
+                        <div class="mt-2">
+                            <small class="text-danger">
+                                <i class="fas fa-mouse-pointer me-1"></i>Click để xem danh sách
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-md-4 col-sm-6 mb-4">
+                <div class="card stat-card h-100 shadow-sm clickable-card" onclick="showStudentsByCategory('nogrades')" style="cursor: pointer;">
+                    <div class="card-body text-center">
+                        <div class="stat-icon text-secondary">
+                            <i class="fas fa-question-circle"></i>
+                        </div>
+                        <div class="stat-number text-secondary" th:text="${noGradesCount}">0</div>
+                        <h6 class="text-muted mb-0">Chưa có điểm</h6>
+                        <div class="mt-2">
+                            <small class="text-secondary">
+                                <i class="fas fa-mouse-pointer me-1"></i>Click để xem danh sách
+                            </small>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý giảng viên</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa giảng viên</p>
-                    <a href="/teachers" class="btn btn-warning">Đi đến</a>
+        <!-- Charts Row -->
+        <div class="row mb-4">
+            <div class="col-lg-8 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Phân bố học lực sinh viên</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="chart-container">
+                            <canvas id="studentPerformanceChart"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-lg-4 mb-4">
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-trophy me-2"></i>Top sinh viên</h5>
+                    </div>
+                    <div class="card-body">
+                        <div th:each="student, iterStat : ${topStudents}" class="d-flex align-items-center mb-3">
+                            <div class="flex-shrink-0">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center" 
+                                     style="width: 40px; height: 40px;">
+                                    <span th:text="${iterStat.index + 1}">1</span>
+                                </div>
+                            </div>
+                            <div class="flex-grow-1 ms-3">
+                                <h6 class="mb-0" th:text="${student.fullName}">Tên sinh viên</h6>
+                                <small class="text-muted" th:text="${student.studentCode}">Mã SV</small>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý môn học</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa môn học</p>
-                    <a href="/subjects" class="btn btn-warning">Đi đến</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý đăng ký môn học</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa đăng ký môn học</p>
-                    <a href="/enrollments" class="btn btn-warning">Đi đến</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Quản lý điểm</h5>
-                    <p class="card-text">Xem, thêm, sửa, xóa điểm</p>
-                    <a href="/grades" class="btn btn-warning">Đi đến</a>
-                </div>
-            </div>
-        </div>
-
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Bảng điểm</h5>
-                    <p class="card-text">Xem bảng điểm</p>
-                    <a href="/transcripts" class="btn btn-warning">Đi đến</a>
-                </div>
-            </div>
-        </div>
-        
-        <div class="col-md-4">
-            <div class="card text-center shadow-sm">
-                <div class="card-body">
-                    <h5 class="card-title">Đăng xuất</h5>
-                    <p class="card-text">Thoát khỏi hệ thống</p>
-                    <form th:action="@{/logout}" method="post" style="display:inline">
-                        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}" />
-                        <button type="submit" class="btn btn-danger">Logout</button>
-                    </form>
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-sm">
+                    <div class="card-header card-header-custom">
+                        <h5 class="mb-0"><i class="fas fa-bolt me-2"></i>Thao tác nhanh</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/students" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-users fa-2x mb-2 d-block"></i>
+                                    <h6>Quản lý sinh viên</h6>
+                                    <small class="text-muted">Thêm, sửa, xóa sinh viên</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/teachers" class="btn btn-outline-success w-100 py-3">
+                                    <i class="fas fa-chalkboard-teacher fa-2x mb-2 d-block"></i>
+                                    <h6>Quản lý giảng viên</h6>
+                                    <small class="text-muted">Thêm, sửa, xóa giảng viên</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/classrooms" class="btn btn-outline-warning w-100 py-3">
+                                    <i class="fas fa-school fa-2x mb-2 d-block"></i>
+                                    <h6>Quản lý lớp học</h6>
+                                    <small class="text-muted">Thêm, sửa, xóa lớp học</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/subjects" class="btn btn-outline-info w-100 py-3">
+                                    <i class="fas fa-book fa-2x mb-2 d-block"></i>
+                                    <h6>Quản lý môn học</h6>
+                                    <small class="text-muted">Thêm, sửa, xóa môn học</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/enrollments" class="btn btn-outline-secondary w-100 py-3">
+                                    <i class="fas fa-clipboard-list fa-2x mb-2 d-block"></i>
+                                    <h6>Đăng ký môn học</h6>
+                                    <small class="text-muted">Quản lý đăng ký</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/grades" class="btn btn-outline-dark w-100 py-3">
+                                    <i class="fas fa-chart-bar fa-2x mb-2 d-block"></i>
+                                    <h6>Quản lý điểm</h6>
+                                    <small class="text-muted">Nhập và quản lý điểm</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/transcripts" class="btn btn-outline-primary w-100 py-3">
+                                    <i class="fas fa-file-alt fa-2x mb-2 d-block"></i>
+                                    <h6>Bảng điểm</h6>
+                                    <small class="text-muted">Xem bảng điểm</small>
+                                </a>
+                            </div>
+                            
+                            <div class="col-lg-3 col-md-6 mb-3">
+                                <a href="/profile" class="btn btn-outline-success w-100 py-3">
+                                    <i class="fas fa-user fa-2x mb-2 d-block"></i>
+                                    <h6>Profile</h6>
+                                    <small class="text-muted">Thông tin tài khoản</small>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+
+    <script>
+        // Student Performance Distribution Chart
+        const ctx = document.getElementById('studentPerformanceChart').getContext('2d');
+        
+        // Get data from Thymeleaf
+        const excellentCount = /*[[${excellentCount}]]*/ 0;
+        const goodCount = /*[[${goodCount}]]*/ 0;
+        const averageCount = /*[[${averageCount}]]*/ 0;
+        const poorCount = /*[[${poorCount}]]*/ 0;
+        const noGradesCount = /*[[${noGradesCount}]]*/ 0;
+        
+        const chart = new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Xuất sắc (≥8.5)', 'Khá (7.0-8.4)', 'Trung bình (5.5-6.9)', 'Yếu (<5.5)', 'Chưa có điểm'],
+                datasets: [{
+                    data: [excellentCount, goodCount, averageCount, poorCount, noGradesCount],
+                    backgroundColor: [
+                        '#28a745',  // Green for excellent
+                        '#007bff',  // Blue for good
+                        '#ffc107',  // Yellow for average
+                        '#dc3545',  // Red for poor
+                        '#6c757d'   // Gray for no grades
+                    ],
+                    borderWidth: 2,
+                    borderColor: '#fff'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                onClick: function(event, elements) {
+                    if (elements.length > 0) {
+                        const elementIndex = elements[0].index;
+                        const category = ['excellent', 'good', 'average', 'poor', 'noGrades'][elementIndex];
+                        showStudentsByCategory(category);
+                    }
+                },
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            padding: 20,
+                            usePointStyle: true,
+                            generateLabels: function(chart) {
+                                const data = chart.data;
+                                if (data.labels.length && data.datasets.length) {
+                                    return data.labels.map((label, i) => {
+                                        const value = data.datasets[0].data[i];
+                                        return {
+                                            text: `${label}: ${value} sinh viên`,
+                                            fillStyle: data.datasets[0].backgroundColor[i],
+                                            strokeStyle: data.datasets[0].borderColor,
+                                            lineWidth: data.datasets[0].borderWidth,
+                                            pointStyle: 'circle',
+                                            hidden: false,
+                                            index: i
+                                        };
+                                    });
+                                }
+                                return [];
+                            }
+                        }
+                    },
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                const label = context.label || '';
+                                const value = context.parsed;
+                                const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                                const percentage = total > 0 ? ((value / total) * 100).toFixed(1) : 0;
+                                return `${label}: ${value} sinh viên (${percentage}%)`;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+        
+        // Function to show students by category
+        function showStudentsByCategory(category) {
+            const categoryNames = {
+                'excellent': 'Xuất sắc',
+                'good': 'Khá', 
+                'average': 'Trung bình',
+                'poor': 'Yếu',
+                'noGrades': 'Chưa có điểm'
+            };
+            
+            // Create modal to show students
+            const modalHtml = `
+                <div class="modal fade" id="studentsModal" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Danh sách sinh viên - ${categoryNames[category]}</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <div id="studentsList">
+                                    <div class="text-center">
+                                        <div class="spinner-border" role="status">
+                                            <span class="visually-hidden">Loading...</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Remove existing modal if any
+            const existingModal = document.getElementById('studentsModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // Add modal to body
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('studentsModal'));
+            modal.show();
+            
+            // Load students data
+            loadStudentsByCategory(category);
+        }
+        
+        // Function to load students by category
+        function loadStudentsByCategory(category) {
+            const studentsList = document.getElementById('studentsList');
+            
+            // Make AJAX call to get students by category
+            fetch(`/api/students/by-performance?category=${category}`)
+                .then(response => response.json())
+                .then(students => {
+                    if (students.length === 0) {
+                        studentsList.innerHTML = `
+                            <div class="alert alert-warning">
+                                <i class="fas fa-exclamation-triangle me-2"></i>
+                                Không có sinh viên nào trong danh mục này.
+                            </div>
+                        `;
+                    } else {
+                        let studentsHtml = '<div class="row">';
+                        students.forEach((student, index) => {
+                            studentsHtml += `
+                                <div class="col-md-6 mb-3">
+                                    <div class="card border-0 shadow-sm">
+                                        <div class="card-body">
+                                            <div class="d-flex align-items-center">
+                                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-3" 
+                                                     style="width: 50px; height: 50px;">
+                                                    <i class="fas fa-user"></i>
+                                                </div>
+                                                <div class="flex-grow-1">
+                                                    <h6 class="mb-1">${student.fullName || 'N/A'}</h6>
+                                                    <p class="text-muted mb-1">
+                                                        <i class="fas fa-id-card me-1"></i>${student.studentCode || 'N/A'}
+                                                    </p>
+                                                    <p class="text-muted mb-0">
+                                                        <i class="fas fa-envelope me-1"></i>${student.email || 'N/A'}
+                                                    </p>
+                                                    ${student.classroom ? `
+                                                        <span class="badge bg-info mt-1">
+                                                            <i class="fas fa-school me-1"></i>${student.classroom.classCode || ''} - ${student.classroom.className || ''}
+                                                        </span>
+                                                    ` : ''}
+                                                </div>
+                                                <div class="text-end">
+                                                    <a href="/transcripts/student/${student.id}" class="btn btn-sm btn-outline-primary" title="Xem bảng điểm">
+                                                        <i class="fas fa-chart-line"></i>
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        studentsHtml += '</div>';
+                        
+                        studentsList.innerHTML = studentsHtml;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error loading students:', error);
+                    studentsList.innerHTML = `
+                        <div class="alert alert-danger">
+                            <i class="fas fa-exclamation-circle me-2"></i>
+                            Có lỗi xảy ra khi tải danh sách sinh viên. Vui lòng thử lại.
+                        </div>
+                    `;
+                });
+        }
+    </script>
+    
+    <!-- Bootstrap JavaScript -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ensure Bootstrap is loaded and provide fallback
+        document.addEventListener('DOMContentLoaded', function() {
+            if (typeof bootstrap === 'undefined') {
+                console.warn('Bootstrap not loaded, using fallback modal');
+                // Create a simple modal fallback
+                window.bootstrap = {
+                    Modal: function(element) {
+                        this.element = element;
+                        this.show = function() {
+                            element.style.display = 'block';
+                            element.classList.add('show');
+                            element.setAttribute('aria-hidden', 'false');
+                            document.body.classList.add('modal-open');
+                            
+                            // Add backdrop
+                            const backdrop = document.createElement('div');
+                            backdrop.className = 'modal-backdrop fade show';
+                            backdrop.id = 'modal-backdrop';
+                            backdrop.onclick = () => this.hide();
+                            document.body.appendChild(backdrop);
+                        };
+                        this.hide = function() {
+                            element.style.display = 'none';
+                            element.classList.remove('show');
+                            element.setAttribute('aria-hidden', 'true');
+                            document.body.classList.remove('modal-open');
+                            const backdrop = document.getElementById('modal-backdrop');
+                            if (backdrop) backdrop.remove();
+                        };
+                    }
+                };
+            }
+        });
+    </script>
 </body>
 </html>
