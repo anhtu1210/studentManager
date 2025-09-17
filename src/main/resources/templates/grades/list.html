@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách điểm</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+
+<h2>Danh sách điểm</h2>
+
+<div class="mb-3">
+    <a th:href="@{/grades/new}" class="btn btn-success">➕ Thêm điểm</a>
+    <a th:href="@{/dashboard}" class="btn btn-secondary">⬅ Quay lại Dashboard</a>
+</div>
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+    <tr>
+        <th>ID</th>
+        <th>Sinh viên</th>
+        <th>Môn học</th>
+        <th>Điểm giữa kỳ</th>
+        <th>Điểm cuối kỳ</th>
+        <th>Điểm tổng kết</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="grade : ${grades}">
+        <td th:text="${grade.id}"></td>
+        <td th:text="${grade.enrollment.student.fullName}"></td>
+        <td th:text="${grade.enrollment.subject.subjectName}"></td>
+        <td th:text="${grade.midtermScore}"></td>
+        <td th:text="${grade.finalScore}"></td>
+        <td th:text="${grade.totalScore}"></td>
+        <td>
+            <a th:href="@{'/grades/edit/' + ${grade.id}}" class="btn btn-primary btn-sm">✏ Sửa</a>
+            <a th:href="@{'/grades/delete/' + ${grade.id}}" 
+               onclick="return confirm('Bạn có chắc muốn xóa?')" 
+               class="btn btn-danger btn-sm">🗑 Xóa</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+
+</body>
+</html>
