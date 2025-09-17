@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Form Lớp</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+    <h2 th:if="${isEdit}">Sửa lớp</h2>
+    <h2 th:unless="${isEdit}">Thêm lớp mới</h2>
+
+<form th:action="@{/classrooms/save}" th:object="${classroom}" method="post">
+    <input type="hidden" th:field="*{id}"/>
+    <div class="mb-3">
+        <label>Mã lớp</label>
+        <input type="text" th:field="*{classCode}" class="form-control"/>
+        <div class="text-danger" th:if="${#fields.hasErrors('classCode')}" th:errors="*{classCode}"></div>
+    </div>
+    <div class="mb-3">
+        <label>Tên lớp</label>
+        <input type="text" th:field="*{className}" class="form-control" />
+    </div>
+    <div class="mb-3">
+        <label>Giảng viên</label>
+        <input type="text" th:field="*{teacherName}" class="form-control" />
+    </div>
+    <button class="btn btn-primary" type="submit">Lưu</button>
+    <a th:href="@{/classrooms}" class="btn btn-secondary">Hủy</a>
+</form>
+</body>
+</html>

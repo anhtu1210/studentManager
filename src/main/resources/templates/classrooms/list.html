@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Danh sách lớp</title>
+    <link rel="stylesheet" th:href="@{/css/bootstrap.min.css}">
+</head>
+<body class="container mt-4">
+<h2>Danh sách Lớp</h2>
+<div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+<a th:href="@{/classrooms/new}" class="btn btn-success mb-3">Thêm lớp</a>
+<table class="table table-bordered">
+    <thead>
+    <tr>
+        <th>ID</th>
+        <th>Mã lớp</th>
+        <th>Tên lớp</th>
+        <th>Giảng viên</th>
+        <th>Hành động</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr th:each="c : ${classrooms}">
+        <td th:text="${c.id}"></td>
+        <td th:text="${c.classCode}"></td>
+        <td th:text="${c.className}"></td>
+        <td th:text="${c.teacherName}"></td>
+        <td>
+            <a th:href="@{/classrooms/edit/{id}(id=${c.id})}" class="btn btn-warning btn-sm">Sửa</a>
+            <a th:href="@{/classrooms/delete/{id}(id=${c.id})}" class="btn btn-danger btn-sm"
+               onclick="return confirm('Xóa lớp?')">Xóa</a>
+        </td>
+    </tr>
+    </tbody>
+</table>
+</body>
+</html>

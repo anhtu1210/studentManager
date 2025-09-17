@@ -2,8 +2,13 @@ package com.example.studentManager.controller;
 
 import com.example.studentManager.entity.Student;
 import com.example.studentManager.service.StudentService;
+import com.example.studentManager.entity.Classroom;
+import com.example.studentManager.service.ClassroomService;
+import jakarta.validation.Valid;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
@@ -11,9 +16,11 @@ import java.util.List;
 @RequestMapping("/students")
 public class StudentController {
     private final StudentService studentService;
+    private final ClassroomService classroomService;
 
-    public StudentController(StudentService studentService) {
+    public StudentController(StudentService studentService, ClassroomService classroomService) {
         this.studentService = studentService;
+        this.classroomService = classroomService;
     }
 
     // Hiển thị danh sách
@@ -34,20 +41,39 @@ public class StudentController {
     @GetMapping("/new")
     public String createStudentForm(Model model) {
         model.addAttribute("student", new Student());
+        model.addAttribute("classrooms", classroomService.getAll());
         return "students/student-form";
     }
 
-    // Lưu sinh viên
     @PostMapping
-    public String saveStudent(@ModelAttribute Student student) {
-        studentService.saveStudent(student);
+    public String saveStudent(@Valid @ModelAttribute("student") Student student,
+                              BindingResult bindingResult,
+                              Model model,
+                              @RequestParam(value = "classroomId", required = false) Long classroomId) {
+        if (bindingResult.hasErrors()) {
+            model.addAttribute("classrooms", classroomService.getAll());
+            return "students/student-form";
+        }
+        if (classroomId != null) {
+            Classroom cls = classroomService.getById(classroomId);
+            student.setClassroom(cls);
+        } else {
+            student.setClassroom(null);
+        }
+        try {
+            studentService.saveStudent(student);
+        } catch (DataIntegrityViolationException ex) {
+            bindingResult.rejectValue("email", "duplicate", "Email đã tồn tại");
+            model.addAttribute("classrooms", classroomService.getAll());
+            return "students/student-form";
+        }
         return "redirect:/students";
     }
 
-    // Form sửa
     @GetMapping("/edit/{id}")
     public String editStudentForm(@PathVariable Long id, Model model) {
         model.addAttribute("student", studentService.getStudentById(id));
+        model.addAttribute("classrooms", classroomService.getAll());
         return "students/student-form";
     }
 

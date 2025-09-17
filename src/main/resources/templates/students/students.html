@@ -31,7 +31,7 @@
         <td th:text="${student.studentCode}"></td>
         <td th:text="${student.fullName}"></td>
         <td th:text="${student.email}"></td>
-        <td th:text="${student.classroom}"></td>
+        <td th:text="${student.classroom != null ? student.classroom.classCode + ' - ' + student.classroom.className : ''}"></td>
         <td th:text="${student.birthday}"></td>
         <td>
             <a th:href="@{/students/edit/{id}(id=${student.id})}" class="btn btn-warning btn-sm">Sửa</a>

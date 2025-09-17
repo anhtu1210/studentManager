@@ -36,6 +36,6 @@ public class StudentServiceImpl implements StudentService {
 
     @Override
     public List<Student> searchStudents(String keyword) {
-        return studentRepository.findByStudentCodeContainingOrFullNameContainingOrClassroomContaining(keyword, keyword, keyword);
+        return studentRepository.findByStudentCodeContainingOrFullNameContainingOrClassroom_ClassCodeContaining(keyword, keyword, keyword);
     }
 }
